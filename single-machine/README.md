@@ -207,13 +207,13 @@ tc-helloworld-go-ws-495672996-nt1m9           1/1       Running   0          5m 
 ### 2. Scaling:
 ```bash
 vagrant@master:~$ kubectl scale --replicas=2 deployment/tc-helloworld-go-ws --record
-deployment "helloworld-go-ws" scaled
+deployment "tc-helloworld-go-ws" scaled
 ```
 
 ### 3. Create a service:
 ```bash
 vagrant@master:~$ kubectl expose deployment tc-helloworld-go-ws --type=NodePort
-service "helloworld-go-ws" exposed
+service "tc-helloworld-go-ws" exposed
 ```
 
 ### 4. Access the service:

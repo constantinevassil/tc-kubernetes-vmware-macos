@@ -33,7 +33,7 @@ You must have the following installed:
   Install by running: 
     
 ```bash
-   vagrant box add bento/ubuntu-16.10
+   vagrant box add bento/ubuntu-17.04
 ```
     
 * run Virtual machine (VM)

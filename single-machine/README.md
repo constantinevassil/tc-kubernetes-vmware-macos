@@ -420,9 +420,3 @@ Access the service from local machine:
 ```bash
 curl http://192.168.33.10:30350
 ```
-
-
-
-
-
-

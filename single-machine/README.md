@@ -90,10 +90,11 @@ After VM is up and running the first step is to add official Kubernetes repo and
 
 ```bash
 vagrant ssh master
-vagrant@master:~$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-vagrant@master:~$ echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-vagrant@master:~$ sudo apt-get update && apt-get upgrade && sudo apt-get install -y docker-engine kubelet kubeadm kubectl kubernetes-cni
-vagrant@master:~$ exit
+vagrant@master:~$ sudo -s
+root@master:~$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+root@master:~$ echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+root@master:~$ sudo apt-get update && apt-get upgrade && sudo apt-get install -y docker-engine kubelet kubeadm kubectl kubernetes-cni
+root@master:~$ exit
 ```
 
 #### 4. Start cluster initialization on the master node.
@@ -102,7 +103,8 @@ When using flannel as the pod network (described in step 6.), specify --pod-netw
 
 ```bash
 vagrant ssh master
-vagrant@master:~$ sudo kubeadm init --apiserver-advertise-address 192.168.44.10 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
+vagrant@master:~$ sudo -s
+root@master:~$ sudo kubeadm init --apiserver-advertise-address 192.168.44.10 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
 ```
 
 

@@ -49,7 +49,7 @@ You must have the following installed:
 Kubernetes is hard to install without using third party tools. kubeadm is an official tool for simple deployment. 
 
 * Before you begin
-	1.	One or more virtual machines running Ubuntu 16.04+
+	1.	One or more virtual machines running Ubuntu 17.04+
 	1.	1GB or more of RAM per machine (any less will leave little room for your apps)
 	1.	Full network connectivity between all machines in the cluster
 
@@ -64,7 +64,7 @@ Everything is done manually for a better understanding of the process. Here is V
 # vi: set ft=ruby :
  
 Vagrant.configure("2") do |config|
-    config.vm.box = "bento/ubuntu-16.10"
+    config.vm.box = "bento/ubuntu-17.04"
     config.vm.synced_folder ENV['HOME'], "/myhome", type: "nfs"
 
     config.vm.provider "vmware_fusion" do |v|

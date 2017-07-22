@@ -62,10 +62,10 @@ Everything is done manually for a better understanding of the process. Here is V
 
 ```javascript
 Vagrant.configure("2") do |config|
-    config.vm.box = "ubuntu/xenial64"
+    config.vm.box = "bento/ubuntu-16.04"
     config.vm.synced_folder ENV['HOME'], "/myhome", type: "nfs"
 
-    config.vm.provider "virtualbox" do |v|
+    config.vm.provider "vmware_fusion" do |v|
       v.memory = 2048
       v.cpus = 1
     end

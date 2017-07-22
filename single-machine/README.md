@@ -61,27 +61,43 @@ Kubernetes is hard to install without using third party tools. kubeadm is an off
 Everything is done manually for a better understanding of the process. Here is Vagrantfile I used to run 1 VM:
 
 ```javascript
+# vi: set ft=ruby :
+ 
 Vagrant.configure("2") do |config|
-    config.vm.box = "bento/ubuntu-16.10"
-    config.vm.synced_folder ENV['HOME'], "/myhome", type: "nfs"
+    config.vm.box = "bento/ubuntu-16.10"
+    config.vm.synced_folder ENV['HOME'], "/myhome", type: "nfs"
 
-    config.vm.provider "vmware_fusion" do |v|
-      v.memory = 2048
-      v.cpus = 1
-    end
- 
-    config.vm.define "master" do |node|
-      node.vm.hostname = "master"
-      node.vm.network :private_network, ip: "192.168.44.10"
-      node.vm.provision :shell, inline: "sed 's/127\.0\.0\.1.*master.*/192\.168\.44\.10 master/' -i /etc/hosts"
-    end
+    config.vm.provider "vmware_fusion" do |v|
+      v.memory = 2048
+      v.cpus = 1
+    end
+ 
+    config.vm.define "master" do |node|
+      node.vm.hostname = "master"
+      node.vm.network "private_network", type: "dhcp"
 
+      # Use NFS for shared folders for better performance
+      node.vm.synced_folder '.', '/vagrant', nfs: true
+    end 
 end
 ```
 
 NOTE: 
-Check your IP address for conflicts on your local network:
-node.vm.network :private_network, ip: "192.168.44.10"
+node.vm.network "private_network", type: "dhcp"
+This will automatically assign an IP address from the reserved address space. The IP address can be determined by using vagrant ssh to SSH into the machine and using the appropriate command line tool to find the IP, such as ifconfig.
+
+```bash
+ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.16.100.129  netmask 255.255.255.0  broadcast 172.16.100.255
+        inet6 fe80::20c:29ff:feeb:cf3a  prefixlen 64  scopeid 0x20<link>
+        ether 00:0c:29:eb:cf:3a  txqueuelen 1000  (Ethernet)
+        RX packets 665  bytes 88932 (88.9 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 510  bytes 367840 (367.8 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+```
+
+In this case Ip address is: 172.16.100.129
 
 After VM is up and running the first step is to add official Kubernetes repo and to install all required packages.
 
@@ -104,7 +120,7 @@ When using flannel as the pod network (described in step 6.), specify --pod-netw
 ```bash
 vagrant ssh master
 vagrant@master:~$ sudo -s
-root@master:~$ sudo kubeadm init --apiserver-advertise-address 192.168.44.10 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
+root@master:~$ sudo kubeadm init --apiserver-advertise-address 172.16.100.129 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
 ```
 
 
@@ -226,9 +242,8 @@ vagrant@master:~$ kubectl describe nodes
 
 ...
 Addresses:
-  InternalIP:	192.168.44.10
-  Hostname:	master
-...  
+  InternalIP:	192.168.232.137
+  Hostname:	master...  
 ```
 
 IP address:192.168.44.10
@@ -241,16 +256,16 @@ View the services:
 vagrant@master:~$ kubectl get services
 NAME                  CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 kubernetes            10.96.0.1       <none>        443/TCP          8m
-tc-helloworld-go-ws   10.104.31.142   <nodes>       8080:30350/TCP   1m
+tc-helloworld-go-ws   10.104.31.142   <nodes>       8080:30947/TCP   1m
 ```
 service port number:32658 
 
 ### 5. Test the service:
 
-The http address of the service: 192.168.44.10:30350
+The http address of the service: 192.168.232.137:30947
 
 ```bash
-vagrant@master:~$ curl http://192.168.44.10:30350
+vagrant@master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.1.0, it took 78ns to run
 ```
 
@@ -259,7 +274,7 @@ Hello World from Go in minimal Docker container(4.28MB) v.1.0, it took 78ns to r
 ```bash
 vagrant@master:~$ kubectl set image deployment/tc-helloworld-go-ws tc-helloworld-go-ws=topconnector/tc-helloworld-go-ws:v2 --record
 deployment "tc-helloworld-go-ws" image updated
-vagrant@master:~$ curl http://192.168.33.10:30350
+vagrant@master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to run
 ```
 
@@ -268,7 +283,7 @@ Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to r
 ```bash
 vagrant@master:~$ kubectl rollout undo deployment tc-helloworld-go-ws
 deployment "tc-helloworld-go-ws" rolled back
-vagrant@master:~$ curl http://192.168.33.10:30350
+vagrant@master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.1.0, it took 68ns to run
 ```
 
@@ -277,7 +292,7 @@ Hello World from Go in minimal Docker container(4.28MB) v.1.0, it took 68ns to r
 ```bash
 vagrant@master:~$ kubectl rollout undo deployment tc-helloworld-go-ws
 deployment "tc-helloworld-go-ws" rolled back
-vagrant@master:~$ curl http://192.168.33.10:30350
+vagrant@master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to run
 ```
 
@@ -345,7 +360,7 @@ Get services:
 kubectl get services
 NAME                  CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 kubernetes            10.96.0.1       <none>        443/TCP          11h
-tc-helloworld-go-ws   10.105.98.177   <nodes>       8080:32631/TCP   11h
+tc-helloworld-go-ws   10.105.98.177   <nodes>       8080:30947/TCP   11h
 ```
 	
 ## Dashboard
@@ -420,5 +435,5 @@ Point your browser to http://127.0.0.1:8001/ui
 Access the service from local machine:
 
 ```bash
-curl http://192.168.33.10:30350
+curl http://192.168.232.137:30947
 ```

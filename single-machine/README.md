@@ -33,7 +33,7 @@ You must have the following installed:
   Install by running: 
     
 ```bash
-   vagrant box add bento/ubuntu-16.04
+   vagrant box add bento/ubuntu-16.10
 ```
     
 * run Virtual machine (VM)
@@ -62,7 +62,7 @@ Everything is done manually for a better understanding of the process. Here is V
 
 ```javascript
 Vagrant.configure("2") do |config|
-    config.vm.box = "bento/ubuntu-16.04"
+    config.vm.box = "bento/ubuntu-16.10"
     config.vm.synced_folder ENV['HOME'], "/myhome", type: "nfs"
 
     config.vm.provider "vmware_fusion" do |v|

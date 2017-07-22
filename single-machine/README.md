@@ -186,7 +186,7 @@ Check rollout status:
 
 ```bash
 ubuntu@master:~$ kubectl rollout status deployment/tc-helloworld-go-ws
-deployment "helloworld-go-ws" successfully rolled out
+deployment "tc-helloworld-go-ws" successfully rolled out
 ```
 
 View the Deployment:

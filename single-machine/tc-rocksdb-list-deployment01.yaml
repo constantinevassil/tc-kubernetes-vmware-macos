@@ -1,0 +1,35 @@
+# for versions before 1.6.0 use extensions/v1beta1 apps/v1beta1
+
+
+#  docker run -p 8080:8080 -v /Users/constantinevas/Desktop/tc-kubernetes-vmware-macos/single-machine/TC.RocksDB/globalip02222017:/vagrant/TC.RocksDB/data topconnector/tc-rocksdb:v1
+# kubectl apply -f tc-rocksdb-list-deployment01.yaml 
+# kubectl expose deployment tc-rocksdb-deployment --type=NodePort
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tc-rocksdb-deployment
+spec:
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      # the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: tc-rocksdb
+    spec:
+      containers:
+      - name: tc-rocksdb
+        image: topconnector/tc-rocksdb:v1
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - mountPath: /vagrant/TC.RocksDB/data 
+            name: tc-rocksdb-volume
+      volumes:
+      - name: tc-rocksdb-volume
+        hostPath:
+        # directory location on host
+         path: /vagrant/TC.RocksDB/data   
+
+         

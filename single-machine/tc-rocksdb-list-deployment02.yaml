@@ -1,5 +1,5 @@
 # for versions before 1.6.0 use extensions/v1beta1 apps/v1beta1
-# # docker run -p 8080:8080 -v /Users/konstantinvassilev/Desktop/tc-vmware-ubuntu-zestyzapus64/TC.RocksDB:/vagrant/TC.RocksDB tc-rocksdb-list:v1
+
 # kubectl apply -f tc-rocksdb-list-deployment02.yaml 
 
 apiVersion: extensions/v1beta1

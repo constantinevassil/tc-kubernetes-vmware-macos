@@ -41,6 +41,7 @@ end
 
 # vagrant plugin install vagrant-vmware-fusion
 # vagrant plugin license vagrant-vmware-fusion ~/license.lic
+# vagrant box add bento/ubuntu-17.04
 # vagrant box update --provider vmware_fusion
 # vagrant up --provider vmware_fusion
 

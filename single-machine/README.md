@@ -28,14 +28,11 @@ You must have the following installed:
   
   Download and install from https://www.vagrantup.com/vmware/index.html
      
-* update VMWare box
-
-  Install by running: 
-    
 ```bash
-   vagrant box add bento/ubuntu-17.04
+    vagrant plugin install vagrant-vmware-fusion
+    vagrant plugin license vagrant-vmware-fusion ~/license.lic
 ```
-    
+
 * run Virtual machine (VM)
 
   Install by running: 

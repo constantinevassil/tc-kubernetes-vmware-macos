@@ -1,6 +1,6 @@
 # for versions before 1.6.0 use extensions/v1beta1 apps/v1beta1
 
-# kubectl apply -f tc-rocksdb-list-deployment02.yaml 
+# kubectl replace -f tc-rocksdb-list-deployment02.yaml 
 
 apiVersion: extensions/v1beta1
 kind: Deployment

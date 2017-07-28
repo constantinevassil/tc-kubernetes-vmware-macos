@@ -65,25 +65,23 @@ Everything is done manually for a better understanding of the process. Here is V
  
 Vagrant.configure("2") do |config|
     config.vm.box = "bento/ubuntu-17.04"
-    config.vm.synced_folder ENV['HOME'], "/myhome", type: "nfs"
-
     config.vm.provider "vmware_fusion" do |v|
       v.memory = 2048
       v.cpus = 1
+      v.gui = true
+ 
     end
  
-    config.vm.define "master" do |node|
-      node.vm.hostname = "master"
-      node.vm.network "private_network", type: "dhcp"
-
-      # Use NFS for shared folders for better performance
-      node.vm.synced_folder '.', '/vagrant', nfs: true
+    config.vm.define "tc-k-vm-master" do |node|
+      node.vm.hostname = "tc-k-vm-master"
+      node.vm.network :public_network
+      node.vm.provision :shell, path: "bootstrap.sh"
     end 
 end
 ```
 
 NOTE: 
-node.vm.network "private_network", type: "dhcp"
+node.vm.network :public_network
 This will automatically assign an IP address from the reserved address space. The IP address can be determined by using vagrant ssh to SSH into the machine and using the appropriate command line tool to find the IP, such as ifconfig.
 
 ```bash
@@ -97,7 +95,7 @@ ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ```
 
-In this case Ip address is: 172.16.100.129
+In this case IP address is: 172.16.100.129
 
 After VM is up and running the first step is to add official Kubernetes repo and to install all required packages.
 
@@ -105,37 +103,38 @@ After VM is up and running the first step is to add official Kubernetes repo and
 #### 1. On master
 
 ```bash
-vagrant ssh master
-vagrant@master:~$ sudo -s
-root@master:~$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-root@master:~$ echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-root@master:~$ sudo apt-get update && apt-get upgrade && sudo apt-get install -y docker-engine kubelet kubeadm kubectl kubernetes-cni
-root@master:~$ exit
+vagrant ssh tc-k-vm-master
+vagrant@tc-k-vm-master:~$ sudo apt-get update && sudo apt-get dist-upgrade
+vagrant@tc-k-vm-master:~$ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+vagrant@tc-k-vm-master:~$ echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+vagrant@tc-k-vm-master:~$ sudo apt-get update && apt-get upgrade && sudo apt-get install -y docker-engine kubelet kubeadm kubectl kubernetes-cni
+vagrant@tc-k-vm-master:~$ exit
 ```
 
 #### 4. Start cluster initialization on the master node.
 
 When using flannel as the pod network (described in step 6.), specify --pod-network-cidr=10.244.0.0/16. 
 
+Use IP address: 172.16.100.129
+
 ```bash
-vagrant ssh master
-vagrant@master:~$ sudo -s
-root@master:~$ sudo kubeadm init --apiserver-advertise-address 172.16.100.129 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
+vagrant ssh tc-k-vm-master
+vagrant@tc-k-vm-master:~$ sudo kubeadm init --apiserver-advertise-address 172.16.100.129 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
 ```
 
 
 #### 5. To start using your cluster, you need to run (as a regular user):
 
 ```bash
-vagrant@master:~$ mkdir -p $HOME/.kube
-vagrant@master:~$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-vagrant@master:~$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+vagrant@tc-k-vm-master:~$ mkdir -p $HOME/.kube
+vagrant@tc-k-vm-master:~$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+vagrant@tc-k-vm-master:~$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 for a single-machine Kubernetes cluster, run:
 
 ```bash
-kubectl taint nodes --all node-role.kubernetes.io/master-
+vagrant@tc-k-vm-master:~$ kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
 That way, pods will actually schedule on a master node.
@@ -144,24 +143,24 @@ That way, pods will actually schedule on a master node.
 
 Flannel RBAC:
 ```bash
-vagrant@master:~$ curl -O https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
-vagrant@master:~$ kubectl apply -f kube-flannel-rbac.yml
+vagrant@tc-k-vm-master:~$ curl -O https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
+vagrant@tc-k-vm-master:~$ kubectl apply -f kube-flannel-rbac.yml
 ```
 
 Flannel config:
 ```bash
-vagrant@master:~$ curl -O https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-vagrant@master:~$ kubectl apply -f kube-flannel.yml
+vagrant@tc-k-vm-master:~$ curl -O https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+vagrant@tc-k-vm-master:~$ kubectl apply -f kube-flannel.yml
 ```
 
 #### 7. Check the cluster initialization:
 ```bash
-vagrant@master:~$ kubectl get pods -o wide --all-namespaces
+vagrant@tc-k-vm-master:~$ kubectl get pods -o wide --all-namespaces
 ```
 
 After successfull initialization you should get:
 ```bash
-vagrant@master:~$ kubectl get pods -o wide --all-namespaces
+vagrant@tc-k-vm-master:~$ kubectl get pods -o wide --all-namespaces
 NAMESPACE     NAME                             READY     STATUS    RESTARTS   AGE       IP              NODE
 kube-system   etcd-master                      1/1       Running   0          8m        192.168.33.10   master
 kube-system   kube-apiserver-master            1/1       Running   0          8m        192.168.33.10   master
@@ -178,12 +177,12 @@ vagrant@master:~$ exit
 
 ```bash
 vagrant ssh master
-vagrant@master:~$ kubectl get nodes
+vagrant@tc-k-vm-master:~$ kubectl get nodes
 ```
 
 After successfully adding nodes you should get:
 ```bash
-vagrant@master:~$ kubectl get nodes
+vagrant@tc-k-vm-master:~$ kubectl get nodes
 NAME      STATUS    AGE       VERSION
 master    Ready     19h       v1.7.1
 ```
@@ -197,19 +196,19 @@ deploy topconnector/tc-helloworld-go-ws
 
 ```bash
 vagrant ssh master
-vagrant@master:~$ kubectl run tc-helloworld-go-ws --image=topconnector/tc-helloworld-go-ws:v1 --port=8080 --record
+vagrant@tc-k-vm-master:~$ kubectl run tc-helloworld-go-ws --image=topconnector/tc-helloworld-go-ws:v1 --port=8080 --record
 ```
 
 Check rollout status:
 
 ```bash
-vagrant@master:~$ kubectl rollout status deployment/tc-helloworld-go-ws
+vagrant@tc-k-vm-master:~$ kubectl rollout status deployment/tc-helloworld-go-ws
 deployment "tc-helloworld-go-ws" successfully rolled out
 ```
 
 View the Deployment:
 ```bash
-vagrant@master:~$ kubectl get deployments
+vagrant@tc-k-vm-master:~$ kubectl get deployments
 NAME                      DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 tc-helloworld-go-ws          1         1         1            1           3m
 ```
@@ -217,20 +216,20 @@ tc-helloworld-go-ws          1         1         1            1           3m
 View the Pods:
 
 ```bash
-vagrant@master:~$ kubectl get pods -o wide
+vagrant@tc-k-vm-master:~$ kubectl get pods -o wide
 NAME                                       READY     STATUS    RESTARTS   AGE       IP           NODE
 tc-helloworld-go-ws-495672996-nt1m9           1/1       Running   0          5m        10.244.1.4   master
 ```
 
 ### 2. Scaling:
 ```bash
-vagrant@master:~$ kubectl scale --replicas=2 deployment/tc-helloworld-go-ws --record
+vagrant@tc-k-vm-master:~$ kubectl scale --replicas=2 deployment/tc-helloworld-go-ws --record
 deployment "tc-helloworld-go-ws" scaled
 ```
 
 ### 3. Create a service:
 ```bash
-vagrant@master:~$ kubectl expose deployment tc-helloworld-go-ws --type=NodePort
+vagrant@tc-k-vm-master:~$ kubectl expose deployment tc-helloworld-go-ws --type=NodePort
 service "tc-helloworld-go-ws" exposed
 ```
 
@@ -238,7 +237,7 @@ service "tc-helloworld-go-ws" exposed
 
 1. get node "master"'s IP address:
 ```bash
-vagrant@master:~$ kubectl describe nodes
+vagrant@tc-k-vm-master:~$ kubectl describe nodes
 
 ...
 Addresses:
@@ -253,7 +252,7 @@ IP address:192.168.44.10
 
 View the services:
 ```bash
-vagrant@master:~$ kubectl get services
+vagrant@tc-k-vm-master:~$ kubectl get services
 NAME                  CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 kubernetes            10.96.0.1       <none>        443/TCP          8m
 tc-helloworld-go-ws   10.104.31.142   <nodes>       8080:30947/TCP   1m
@@ -265,34 +264,34 @@ service port number:32658
 The http address of the service: 192.168.232.137:30947
 
 ```bash
-vagrant@master:~$ curl http://192.168.232.137:30947
+vagrant@tc-k-vm-master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.1.0, it took 78ns to run
 ```
 
 ### 6. Update your app to version 2
 
 ```bash
-vagrant@master:~$ kubectl set image deployment/tc-helloworld-go-ws tc-helloworld-go-ws=topconnector/tc-helloworld-go-ws:v2 --record
+vagrant@tc-k-vm-master:~$ kubectl set image deployment/tc-helloworld-go-ws tc-helloworld-go-ws=topconnector/tc-helloworld-go-ws:v2 --record
 deployment "tc-helloworld-go-ws" image updated
-vagrant@master:~$ curl http://192.168.232.137:30947
+vagrant@tc-k-vm-master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to run
 ```
 
 ### 7. Rollback your app to version 1
 
 ```bash
-vagrant@master:~$ kubectl rollout undo deployment tc-helloworld-go-ws
+vagrant@tc-k-vm-master:~$ kubectl rollout undo deployment tc-helloworld-go-ws
 deployment "tc-helloworld-go-ws" rolled back
-vagrant@master:~$ curl http://192.168.232.137:30947
+vagrant@tc-k-vm-master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.1.0, it took 68ns to run
 ```
 
 ### 8. Rollback your app to version 2
 
 ```bash
-vagrant@master:~$ kubectl rollout undo deployment tc-helloworld-go-ws
+vagrant@tc-k-vm-master:~$ kubectl rollout undo deployment tc-helloworld-go-ws
 deployment "tc-helloworld-go-ws" rolled back
-vagrant@master:~$ curl http://192.168.232.137:30947
+vagrant@tc-k-vm-master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to run
 ```
 
@@ -303,7 +302,7 @@ Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to r
 Get admin.conf from /etc/kubernetes on master and copy to your local machine's current folder:
 
 ```bash
-vagrant@master:~$ sudo cat /etc/kubernetes/admin.conf > /vagrant/admin.conf
+vagrant@tc-k-vm-master:~$ sudo cat /etc/kubernetes/admin.conf > /vagrant/admin.conf
 exit
 ```
 
@@ -374,7 +373,7 @@ Kube version 1.6 uses RBAC as a default form of auth.
 ### 1. Install the dashboard
 
 ```bash
-vagrant@master:~$ kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+vagrant@tc-k-vm-master:~$ kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
 ```
 
 ### 2. Configure a role
@@ -384,7 +383,7 @@ We also need to configure a role.
 copy from local folder:
 
 ```bash
-vagrant@master:~$ cat /vagrant/admin-role.yml > admin-role.yml
+vagrant@tc-k-vm-master:~$ cat /vagrant/admin-role.yml > admin-role.yml
 ```
 
 Or in a text editor of your choice (vim) create admin-role.yml on master:

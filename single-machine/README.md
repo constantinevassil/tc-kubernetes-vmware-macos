@@ -2,7 +2,7 @@
 
 # tc-kubernetes-virtualbox-macos
 
-Vagrant config to run a full local Kubernetes cluster using the source directory from your Mac.
+Vagrant config to run a full local Kubernetes cluster using the source directory from your Mac under VMWare Fusion.
 
 ## Getting started
 

@@ -1,7 +1,5 @@
 # for versions before 1.6.0 use extensions/v1beta1 apps/v1beta1
 
-
-#  docker run -p 8080:8080 -v /Users/constantinevas/Desktop/tc-kubernetes-vmware-macos/single-machine/TC.RocksDB/globalip02222017:/vagrant/TC.RocksDB/data topconnector/tc-rocksdb:v1
 # kubectl apply -f tc-rocksdb-list-deployment01.yaml 
 # kubectl expose deployment tc-rocksdb-deployment --type=NodePort
 

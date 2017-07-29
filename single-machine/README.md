@@ -92,7 +92,16 @@ ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 ```
 
-In this case IP address is: 172.16.100.129
+In this case IP address is: 172.16.100.129, netmask 255.255.255.0 
+To assign statis IP Address to Vagrantfile, replace 
+      node.vm.network :public_network
+with:
+      node.vm.network "public_network", bridge: 'en0: Ethernet', ip: "172.16.100.129", netmask: "255.255.255.0"
+Then
+```bash
+	vagrant reload
+```
+Then you can ping 172.16.100.129 from another computer on same network.
 
 After VM is up and running the first step is to add official Kubernetes repo and to install all required packages.
 

@@ -54,3 +54,5 @@ sudo apt-get update && sudo apt-get install -y docker-engine kubelet kubeadm kub
 # tc-rocksdb-deployment   10.101.72.203   <nodes>       8080:30493/TCP   10s       app=tc-rocksdb
 
 # curl 192.168.2.114:30493
+
+# find / -name "*.vmx" 

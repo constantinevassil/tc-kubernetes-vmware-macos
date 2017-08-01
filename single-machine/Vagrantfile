@@ -43,5 +43,54 @@ end
 # vagrant plugin license vagrant-vmware-fusion ~/license.lic
 # vagrant box add bento/ubuntu-17.04
 # vagrant box update --provider vmware_fusion
-# vagrant up --provider vmware_fusion
+# vagrant up --no-provision --provider vmware_fusion
+# find . -name '*.vmx'
+# vagrant reload --provision 
+# vagrant reload --no-provision 
+
+# vagrant resume --no-provision 
+
+# Need to do Bridged Adapter only in Vagrant, no NAT
+# https://superuser.com/questions/752954/need-to-do-bridged-adapter-only-in-vagrant-no-nat
+
+# config.vm.network "public_network", bridge: 'en0: Ethernet', ip: "192.168.1.201"
+
+# networksetup -listallhardwareports
+
+# Hardware Port: Ethernet
+# Device: en0
+# Ethernet Address: 38:c9:86:41:77:47
+
+# en0: flags=8963<UP,BROADCAST,SMART,RUNNING,PROMISC,SIMPLEX,MULTICAST> mtu 1500
+#   options=10b<RXCSUM,TXCSUM,VLAN_HWTAGGING,AV>
+#   ether 38:c9:86:41:77:47
+#   inet6 fe80::3ac9:86ff:fe41:7747%en0 prefixlen 64 scopeid 0x4
+#   inet6 fd12:3456:789a:1::195 prefixlen 64
+#   inet 192.168.0.195 netmask 0xfffff800 broadcast 192.168.7.255
+#   nd6 options=1<PERFORMNUD>
+#   media: autoselect (1000baseT <full-duplex>)
+#   status: active
+
+# Hardware Port: Wi-Fi
+# Device: en1
+# Ethernet Address: bc:54:36:d2:2e:72
+
+# Hardware Port: Bluetooth PAN
+# Device: en4
+# Ethernet Address: bc:54:36:d2:2e:73
+
+# Hardware Port: Thunderbolt 1
+# Device: en2
+# Ethernet Address: 2a:00:01:54:f6:10
+
+# Hardware Port: Thunderbolt 2
+# Device: en3
+# Ethernet Address: 2a:00:01:54:f6:11
+
+# Hardware Port: Thunderbolt Bridge
+# Device: bridge0
+# Ethernet Address: 3a:c9:86:14:30:00
+
+
+
 

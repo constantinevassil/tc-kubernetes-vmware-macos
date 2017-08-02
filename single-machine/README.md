@@ -80,6 +80,8 @@ end
 NOTE: 
 node.vm.network :public_network
 This will automatically assign an IP address from the reserved address space. The IP address can be determined by using vagrant ssh to SSH into the machine and using the appropriate command line tool to find the IP, such as ifconfig.
+ 
+ # eth0 in Vagrant for now is always NAT. 
 
 ```bash
 ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500

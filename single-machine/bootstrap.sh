@@ -1,58 +1,56 @@
 #!/usr/bin/env bash
 
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-sudo apt-get update && sudo apt-get install -y docker-engine kubelet kubeadm kubectl kubernetes-cni
+# su --> password = 'vagrant'
+yum check-update
+yum -y update
 
-# ifconfig
-# ens33: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-#         inet 10.0.1.30  netmask 255.255.255.0  broadcast 10.0.1.255
-#         inet6 fe80::20c:29ff:fe67:d7b1  prefixlen 64  scopeid 0x20<link>
-#         ether 00:0c:29:67:d7:b1  txqueuelen 1000  (Ethernet)
-#         RX packets 106  bytes 9801 (9.8 KB)
-#         RX errors 0  dropped 0  overruns 0  frame 0
-#         TX packets 18  bytes 2030 (2.0 KB)
-#         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://yum.kubernetes.io/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
 
-# sudo kubeadm init --apiserver-advertise-address 192.168.2.114 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
+setenforce 0
+# Note: Disabling SELinux by running setenforce 0 is required to allow containers to access the host filesystem, which is required by pod networks for example. You have to do this until SELinux support is improved in the kubelet.
 
-# mkdir -p $HOME/.kube
+yum install -y docker kubelet kubeadm kubectl kubernetes-cni
+systemctl enable docker && systemctl start docker
+systemctl enable kubelet && systemctl start kubelet
+#  The kubelet is now restarting every few seconds, as it waits in a crashloop for kubeadm to tell it what to do.
+sysctl net.bridge.bridge-nf-call-iptables=1
+sysctl net.bridge.bridge-nf-call-ip6tables=1
+
+echo "192.168.0.198	tc-centos-master-hatc1" >> /etc/hosts
+kubeadm init --apiserver-advertise-address 10.0.1.52 --pod-network-cidr 10.244.0.0/16 --token 8c2350.f55343444a6ffc46
+
+sudo mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
+
+
+kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+kubectl apply -f https://raw.githubusercontent.com/topconnector/tc-kubernetes-vagrant-vmware-centos-macos/master/admin-role.yml
+
+#--- Do this manually
+#---
+#---
+# vagrant ssh
+# sudo mkdir -p $HOME/.kube
 # sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 # sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-# kubectl taint nodes --all node-role.kubernetes.io/master-
-
-# curl -O https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
-# kubectl apply -f kube-flannel-rbac.yml
-
-# curl -O https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-# kubectl apply -f kube-flannel.yml
-
+#
+# kubectl get nodes
 # kubectl get pods -o wide --all-namespaces
 
-# sudo cat /etc/kubernetes/admin.conf > /vagrant/admin.conf
 
-#copy admin.conf to $HOME/.kube/config and prepare to use locally.
 
-# sudo mkdir -p $HOME/.kube
-# sudo cp -i ./admin.conf $HOME/.kube/config
-# sudo chown $(id -u):$(id -g) $HOME/.kube/config
-# sudo cat $HOME/.kube/config
-
-# kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
-# cat /vagrant/admin-role.yml > admin-role.yml
-
-# kubectl apply -f admin-role.yml
-
-# 
-# kubectl apply -f /vagrant/tc-rocksdb-deployment01.yaml
-# kubectl expose deployment tc-rocksdb-deployment --type=NodePort
-
-# vagrant@tc-k-vm-master:~$ kubectl get svc -o wide
-# NAME                    CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE       SELECTOR
-# kubernetes              10.96.0.1       <none>        443/TCP          4m        <none>
-# tc-rocksdb-deployment   10.101.72.203   <nodes>       8080:30493/TCP   10s       app=tc-rocksdb
-
-# curl 192.168.2.114:30493
-
-# find / -name "*.vmx" 

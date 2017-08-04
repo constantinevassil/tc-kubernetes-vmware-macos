@@ -57,7 +57,7 @@ Kubernetes is hard to install without using third party tools. kubeadm is an off
 
 Everything is done manually for a better understanding of the process. Here is Vagrantfile I used to run 1 VM:
 
-```javascript
+```ruby
 # vi: set ft=ruby :
  
 Vagrant.configure("2") do |config|
@@ -343,7 +343,7 @@ Move the binary in to your PATH.
 sudo mv ./kubectl /usr/local/bin/kubectl
 
 
-### 3. Check master configuration 
+### 3. Check the master configuration 
 
 Get nodes:
 

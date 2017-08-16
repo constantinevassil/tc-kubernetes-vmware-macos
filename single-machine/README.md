@@ -306,7 +306,9 @@ Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to r
 ## Installing with configuration files:
 
 ```bash
-sudo kubectl apply --filename  tc-helloworld-go-ws-deployment.yaml
+kubectl apply --filename  https://raw.githubusercontent.com/topconnector/tc-kubernetes-vmware-macos/master/single-machine/tc-helloworld-go-ws-deployment.yaml
+kubectl apply --filename  https://raw.githubusercontent.com/topconnector/tc-kubernetes-vmware-macos/master/single-machine/tc-helloworld-go-ws-svc.yaml
+
 ```
 
 

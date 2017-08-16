@@ -17,5 +17,5 @@ spec:
     role: client
   ports:
   - name: http
-    port: 9200
+    port: 8080
     protocol: TCP

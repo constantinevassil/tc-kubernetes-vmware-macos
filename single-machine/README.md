@@ -204,7 +204,7 @@ deploy topconnector/tc-helloworld-go-ws
 
 ```bash
 vagrant ssh master
-vagrant@tc-k-vm-master:~$ kubectl run tc-helloworld-go-ws --image=topconnector/tc-helloworld-go-ws:v1 --port=8080 --record
+vagrant@tc-k-vm-master:~$ kubectl run tc-helloworld-go-ws --image=topconnector/tc-helloworld-go-ws:v1 --port=1010 --record
 ```
 
 Check rollout status:

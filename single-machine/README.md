@@ -303,6 +303,13 @@ vagrant@tc-k-vm-master:~$ curl http://192.168.232.137:30947
 Hello World from Go in minimal Docker container(4.28MB) v.2.0, it took 68ns to run
 ```
 
+## Installing with configuration files:
+
+```bash
+sudo kubectl apply --filename  tc-helloworld-go-ws-deployment.yaml
+```
+
+
 ## Access your cluster from your local machine
 
 ### 1. Get admin.conf from master

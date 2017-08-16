@@ -1,6 +1,7 @@
 
 # for versions before 1.6.0 use extensions/v1beta1 apps/v1beta1
-
+# kubectl run tc-helloworld-go-ws --image=topconnector/tc-helloworld-go-ws:v1 --port=1010 --record
+# OR
 # kubectl apply -f tc-helloworld-go-ws.yaml 
 # kubectl expose deployment tc-helloworld-go-ws --type=NodePort
 

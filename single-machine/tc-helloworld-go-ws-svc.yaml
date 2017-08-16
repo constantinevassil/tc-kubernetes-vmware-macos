@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: elasticsearch
+  name: tc-helloworld-go-ws
   labels:
-    component: elasticsearch
+    component: tc-helloworld-go-ws
     role: client
 spec:
   # In a production setup, we recommend accessing Elasticsearch through an external Loadbalancer
@@ -13,7 +13,7 @@ spec:
   # You could also use NodePort to expose the service at a randomly-generated port
   type: NodePort
   selector:
-    component: elasticsearch
+    component: tc-helloworld-go-ws
     role: client
   ports:
   - name: http

@@ -1,1 +1,27 @@
 
+# for versions before 1.6.0 use extensions/v1beta1 apps/v1beta1
+
+# kubectl apply -f tc-helloworld-go-ws.yaml 
+# kubectl expose deployment tc-helloworld-go-ws --type=NodePort
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tc-helloworld-go-ws
+spec:
+  replicas: 1 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      # the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: tc-helloworld-go-ws
+    spec:
+      containers:
+      - name: tc-helloworld-go-ws
+        image: topconnector/tc-helloworld-go-ws:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+
+         

@@ -17,5 +17,5 @@ spec:
     role: client
   ports:
   - name: http
-    port: 8080
+    port: 1010
     protocol: TCP
